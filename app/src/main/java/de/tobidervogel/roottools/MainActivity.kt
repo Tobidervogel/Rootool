@@ -24,6 +24,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material.icons.rounded.SystemUpdate
@@ -47,6 +48,7 @@ import de.tobidervogel.roottools.mac.MacSeite
 import de.tobidervogel.roottools.update.NotfallSeite
 import de.tobidervogel.roottools.update.UpdateSeite
 import de.tobidervogel.roottools.root.Root
+import de.tobidervogel.roottools.sicherung.AppSicherungSeite
 import de.tobidervogel.roottools.ui.Abzeichen
 import de.tobidervogel.roottools.ui.Etikett
 import de.tobidervogel.roottools.ui.Farbe
@@ -64,6 +66,7 @@ enum class Bereich(val titel: String) { System("System"), Sicherung("Sicherung")
 enum class Werkzeug(val titel: String, val text: String, val symbol: ImageVector, val bereich: Bereich) {
     Update("System-Update", "Updates installieren, ohne Root zu verlieren", Icons.Rounded.SystemUpdate, Bereich.System),
     Notfall("Notfall-Sicherung", "Boot-Abbilder und Funkdaten sichern", Icons.Rounded.Save, Bereich.Sicherung),
+    AppSicherung("App-Sicherung", "Apps mit Daten sichern, neue APK einspielen", Icons.Rounded.Apps, Bereich.Sicherung),
     Mac("MAC-Adresse", "Eigene WLAN-MAC statt Androids Zufalls-MAC", Icons.Rounded.Wifi, Bereich.Netz),
 }
 
@@ -88,6 +91,7 @@ private fun App() {
         when (seiten.lastOrNull()) {
             Werkzeug.Update -> UpdateSeite(::zurueck, notfallOeffnen = { oeffnen(Werkzeug.Notfall) })
             Werkzeug.Notfall -> NotfallSeite(::zurueck)
+            Werkzeug.AppSicherung -> AppSicherungSeite(::zurueck)
             Werkzeug.Mac -> MacSeite(::zurueck)
             null -> StartSeite(::oeffnen)
         }

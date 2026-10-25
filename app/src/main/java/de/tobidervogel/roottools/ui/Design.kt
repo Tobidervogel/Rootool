@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -35,10 +36,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
@@ -159,9 +165,9 @@ fun Knopf(
 ) {
     val form = RoundedCornerShape(26.dp)
     val vorne = when {
+        !aktiv -> Farbe.text3
         !haupt -> textFarbe ?: Farbe.text
-        aktiv -> Farbe.grund
-        else -> Farbe.text3
+        else -> Farbe.grund
     }
     Row(
         modifier
@@ -268,3 +274,39 @@ fun Kopfzeile(titel: String, zurueck: () -> Unit, neuLaden: (() -> Unit)? = null
 /** Abstand zwischen Karten. */
 @Composable
 fun Luecke() = Spacer(Modifier.height(12.dp))
+
+/** Einzeiliges Suchfeld im Stil der Karten. */
+@Composable
+fun Suchfeld(text: String, aendern: (String) -> Unit, hinweis: String) {
+    Box(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Farbe.karte).padding(horizontal = 16.dp, vertical = 14.dp),
+    ) {
+        if (text.isEmpty()) Text(hinweis, style = Schrift.text, color = Farbe.text3)
+        BasicTextField(
+            value = text,
+            onValueChange = aendern,
+            singleLine = true,
+            textStyle = Schrift.text.copy(color = Farbe.text),
+            cursorBrush = SolidColor(Farbe.akzent),
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+/** Zweistufiger Knopf fuer Gefaehrliches: erst tippen, dann "Wirklich?" bestaetigen. */
+@Composable
+fun SicherKnopf(text: String, frage: String, onClick: () -> Unit, aktiv: Boolean = true, symbol: ImageVector? = null) {
+    var fragt by remember { mutableStateOf(false) }
+    if (!fragt) {
+        Knopf(text, { fragt = true }, haupt = false, aktiv = aktiv, symbol = symbol)
+    } else {
+        Column {
+            Text(frage, style = Schrift.klein, color = Farbe.warnung)
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Knopf("Ja", { fragt = false; onClick() }, aktiv = aktiv)
+                Knopf("Abbrechen", { fragt = false }, haupt = false)
+            }
+        }
+    }
+}
