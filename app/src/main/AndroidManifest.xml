@@ -3,7 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Root Tools — private Werkzeuge fuer das gerootete Nord 3 (Magisk).
-         Absichtlich kein Internet: alles laeuft ueber su, nichts geht nach draussen. -->
+         Alles laeuft ueber su. -->
+
+    <!-- Nur fuer den Werbeblocker: die hosts-Liste von GitHub laden, wenn Tobi auf "Laden" tippt (netz/Werbeblocker.kt).
+         Sonst geht nichts nach draussen. -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Namen und Symbole aller Apps fuer App-Sicherung und Firewall. Ohne sieht Android 11+ fast keine App. -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"

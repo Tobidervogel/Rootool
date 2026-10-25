@@ -25,8 +25,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Apps
+import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Save
+import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Icon
@@ -45,6 +47,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import de.tobidervogel.roottools.mac.MacSeite
+import de.tobidervogel.roottools.netz.FirewallSeite
+import de.tobidervogel.roottools.netz.WerbeblockerSeite
 import de.tobidervogel.roottools.update.NotfallSeite
 import de.tobidervogel.roottools.update.UpdateSeite
 import de.tobidervogel.roottools.root.Root
@@ -67,6 +71,8 @@ enum class Werkzeug(val titel: String, val text: String, val symbol: ImageVector
     Update("System-Update", "Updates installieren, ohne Root zu verlieren", Icons.Rounded.SystemUpdate, Bereich.System),
     Notfall("Notfall-Sicherung", "Boot-Abbilder und Funkdaten sichern", Icons.Rounded.Save, Bereich.Sicherung),
     AppSicherung("App-Sicherung", "Apps mit Daten sichern, neue APK einspielen", Icons.Rounded.Apps, Bereich.Sicherung),
+    Firewall("Firewall", "Apps das Internet sperren, auch nach Zeitplan", Icons.Rounded.Shield, Bereich.Netz),
+    Werbeblocker("Werbeblocker", "Werbung und Tracker systemweit sperren", Icons.Rounded.Block, Bereich.Netz),
     Mac("MAC-Adresse", "Eigene WLAN-MAC statt Androids Zufalls-MAC", Icons.Rounded.Wifi, Bereich.Netz),
 }
 
@@ -92,6 +98,8 @@ private fun App() {
             Werkzeug.Update -> UpdateSeite(::zurueck, notfallOeffnen = { oeffnen(Werkzeug.Notfall) })
             Werkzeug.Notfall -> NotfallSeite(::zurueck)
             Werkzeug.AppSicherung -> AppSicherungSeite(::zurueck)
+            Werkzeug.Firewall -> FirewallSeite(::zurueck)
+            Werkzeug.Werbeblocker -> WerbeblockerSeite(::zurueck)
             Werkzeug.Mac -> MacSeite(::zurueck)
             null -> StartSeite(::oeffnen)
         }
@@ -151,7 +159,7 @@ private fun StartSeite(oeffnen: (Werkzeug) -> Unit) {
 
         Spacer(Modifier.height(24.dp))
         Text(
-            "Privat: Root Tools hat keine Internet-Berechtigung und schickt nichts nach draußen.",
+            "Privat: Root Tools geht nur ins Internet, wenn du im Werbeblocker eine Liste lädst. Sonst schickt es nichts nach draußen.",
             style = Schrift.klein, color = Farbe.text3,
         )
         Spacer(Modifier.height(24.dp))

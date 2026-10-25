@@ -96,8 +96,19 @@ mac_setzen() {
 
 stoppen() {
     p=$(waechter_pid)
-    [ -n "$p" ] && kill "$p" 2>/dev/null
     rm -f "$PIDF"
+    [ -n "$p" ] || return 0
+    kill "$p" 2>/dev/null
+    # mksh (die Shell von Android) faengt TERM ab und beendet sich dann nicht immer: nach kurzer Frist hart beenden.
+    # Ausserdem hoert jeder Waechter von selbst auf, sobald die PID-Datei nicht mehr ihm gehoert (meins).
+    sleep 0.3
+    kill -0 "$p" 2>/dev/null && kill -9 "$p" 2>/dev/null
+    return 0
+}
+
+# Gehoert die PID-Datei noch diesem Waechter?
+meins() {
+    { read -r wer < "$PIDF"; } 2>/dev/null && [ "$wer" = "$$" ]
 }
 
 starten() {
@@ -161,7 +172,7 @@ waechter() {
     fenster=0
     versuche=0
     unten_versucht=
-    while [ -f "$CONF" ]; do
+    while [ -f "$CONF" ] && meins; do
         lesen 2>/dev/null
         if [ -n "$MAC" ] && { read -r jetzt < "$NET/$IFACE/address"; } 2>/dev/null && [ "$jetzt" != "$MAC" ]; then
             if oben; then

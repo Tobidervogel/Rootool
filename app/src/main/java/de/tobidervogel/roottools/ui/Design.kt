@@ -277,9 +277,9 @@ fun Luecke() = Spacer(Modifier.height(12.dp))
 
 /** Einzeiliges Suchfeld im Stil der Karten. */
 @Composable
-fun Suchfeld(text: String, aendern: (String) -> Unit, hinweis: String) {
+fun Suchfeld(text: String, aendern: (String) -> Unit, hinweis: String, grund: Color = Farbe.karte) {
     Box(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Farbe.karte).padding(horizontal = 16.dp, vertical = 14.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(grund).padding(horizontal = 16.dp, vertical = 14.dp),
     ) {
         if (text.isEmpty()) Text(hinweis, style = Schrift.text, color = Farbe.text3)
         BasicTextField(
