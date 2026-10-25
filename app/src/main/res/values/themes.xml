@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose malt alles. Das Theme setzt nur den Fensterhintergrund, damit beim Start nichts hell aufblitzt. -->
+    <style name="Theme.RootTools" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/grund</item>
+        <item name="android:navigationBarColor">@color/grund</item>
+        <item name="android:statusBarColor">@color/grund</item>
+    </style>
+</resources>

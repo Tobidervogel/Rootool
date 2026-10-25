@@ -1,0 +1,14 @@
+# Build und Caches
+build/
+.gradle/
+.kotlin/
+.idea/
+*.iml
+local.properties
+*.log
+# Binaer
+*.apk
+*.aab
+# Zugangsdaten
+*.jks
+*.keystore

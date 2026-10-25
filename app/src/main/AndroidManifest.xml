@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Root Tools — private Werkzeuge fuer das gerootete Nord 3 (Magisk).
+         Alles laeuft ueber su. -->
+
+    <!-- Nur fuer den Werbeblocker: die hosts-Liste von GitHub laden, wenn Tobi auf "Laden" tippt (netz/Werbeblocker.kt).
+         Sonst geht nichts nach draussen. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Namen und Symbole aller Apps fuer App-Sicherung und Firewall. Ohne sieht Android 11+ fast keine App. -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+
+    <!-- Apps, die Root Tools oeffnet (System-Update). Ohne diese Angabe sieht Android 11+ sie nicht. -->
+    <queries>
+        <package android:name="com.topjohnwu.magisk" />
+        <package android:name="com.oplus.ota" />
+        <package android:name="com.arjanvlek.oxygenupdater" />
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="false"
+        android:theme="@style/Theme.RootTools">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
