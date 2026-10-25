@@ -21,11 +21,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Casino
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.PhoneAndroid
-import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,7 +51,7 @@ import de.tobidervogel.roottools.ui.Farbe
 import de.tobidervogel.roottools.ui.Hinweis
 import de.tobidervogel.roottools.ui.Karte
 import de.tobidervogel.roottools.ui.Knopf
-import de.tobidervogel.roottools.ui.RundKnopf
+import de.tobidervogel.roottools.ui.Kopfzeile
 import de.tobidervogel.roottools.ui.SchalterZeile
 import de.tobidervogel.roottools.ui.Schrift
 import de.tobidervogel.roottools.ui.WertZeile
@@ -138,13 +136,7 @@ fun MacSeite(zurueck: () -> Unit) {
             .padding(horizontal = 20.dp),
     ) {
         Spacer(Modifier.height(12.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            RundKnopf(Icons.AutoMirrored.Rounded.ArrowBack, "Zurück", zurueck)
-            Spacer(Modifier.width(14.dp))
-            Text("MAC-Adresse", style = Schrift.titel, color = Farbe.text, modifier = Modifier.weight(1f))
-            RundKnopf(Icons.Rounded.Refresh, "Neu laden", { neuLaden() }, aktiv = !beschaeftigt)
-        }
-        Spacer(Modifier.height(20.dp))
+        Kopfzeile("MAC-Adresse", zurueck, { neuLaden() }, aktiv = !beschaeftigt)
 
         // ------------------------------------------------ Jetzt
         Karte {

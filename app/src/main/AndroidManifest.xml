@@ -4,6 +4,13 @@
     <!-- Root Tools — private Werkzeuge fuer das gerootete Nord 3 (Magisk).
          Absichtlich KEINE Berechtigungen, auch kein Internet: alles laeuft ueber su, nichts geht nach draussen. -->
 
+    <!-- Apps, die Root Tools oeffnet (System-Update). Ohne diese Angabe sieht Android 11+ sie nicht. -->
+    <queries>
+        <package android:name="com.topjohnwu.magisk" />
+        <package android:name="com.oplus.ota" />
+        <package android:name="com.arjanvlek.oxygenupdater" />
+    </queries>
+
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"

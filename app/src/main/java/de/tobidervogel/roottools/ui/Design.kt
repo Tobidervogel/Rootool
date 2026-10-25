@@ -11,13 +11,21 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -231,3 +239,32 @@ fun Hinweis(titel: String, text: String, farbe: Color = Farbe.warnung, inhalt: @
         Row(Modifier.fillMaxWidth().padding(top = 4.dp), content = inhalt)
     }
 }
+
+/** Rahmen jeder Werkzeugseite: scrollt, haelt Abstand zu Status- und Navigationsleiste. */
+@Composable
+fun Seite(inhalt: @Composable ColumnScope.() -> Unit) {
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).statusBarsPadding().navigationBarsPadding()
+            .padding(horizontal = 20.dp),
+    ) {
+        Spacer(Modifier.height(12.dp))
+        inhalt()
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+/** Zurueck, Titel, Neu laden. */
+@Composable
+fun Kopfzeile(titel: String, zurueck: () -> Unit, neuLaden: (() -> Unit)? = null, aktiv: Boolean = true) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        RundKnopf(Icons.AutoMirrored.Rounded.ArrowBack, "Zurück", zurueck)
+        Spacer(Modifier.width(14.dp))
+        Text(titel, style = Schrift.titel, color = Farbe.text, modifier = Modifier.weight(1f))
+        if (neuLaden != null) RundKnopf(Icons.Rounded.Refresh, "Neu laden", neuLaden, aktiv = aktiv)
+    }
+    Spacer(Modifier.height(20.dp))
+}
+
+/** Abstand zwischen Karten. */
+@Composable
+fun Luecke() = Spacer(Modifier.height(12.dp))

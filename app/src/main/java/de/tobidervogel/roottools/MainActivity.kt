@@ -25,6 +25,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.Save
+import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -42,6 +44,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import de.tobidervogel.roottools.mac.MacSeite
+import de.tobidervogel.roottools.update.NotfallSeite
+import de.tobidervogel.roottools.update.UpdateSeite
 import de.tobidervogel.roottools.root.Root
 import de.tobidervogel.roottools.ui.Abzeichen
 import de.tobidervogel.roottools.ui.Etikett
@@ -54,9 +58,13 @@ import de.tobidervogel.roottools.ui.Schrift
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+enum class Bereich(val titel: String) { System("System"), Sicherung("Sicherung"), Netz("Netz") }
+
 /** Alle Werkzeuge der App. Ein neues Werkzeug = ein Eintrag hier plus seine Seite in [App]. */
-enum class Werkzeug(val titel: String, val text: String, val symbol: ImageVector) {
-    Mac("MAC-Adresse", "Eigene WLAN-MAC statt Androids Zufalls-MAC", Icons.Rounded.Wifi),
+enum class Werkzeug(val titel: String, val text: String, val symbol: ImageVector, val bereich: Bereich) {
+    Update("System-Update", "Updates installieren, ohne Root zu verlieren", Icons.Rounded.SystemUpdate, Bereich.System),
+    Notfall("Notfall-Sicherung", "Boot-Abbilder und Funkdaten sichern", Icons.Rounded.Save, Bereich.Sicherung),
+    Mac("MAC-Adresse", "Eigene WLAN-MAC statt Androids Zufalls-MAC", Icons.Rounded.Wifi, Bereich.Netz),
 }
 
 class MainActivity : ComponentActivity() {
@@ -69,12 +77,19 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun App() {
-    var offen by rememberSaveable { mutableStateOf<String?>(null) }
-    BackHandler(enabled = offen != null) { offen = null }
+    // Geoeffnete Seiten als Stapel ("Update,Notfall"), damit Zurueck von einer verlinkten Seite dorthin fuehrt,
+    // woher man kam. Als Text, weil rememberSaveable den ueber eine Drehung retten kann.
+    var stapel by rememberSaveable { mutableStateOf("") }
+    val seiten = stapel.split(',').filter { it.isNotEmpty() }.mapNotNull { n -> Werkzeug.entries.find { it.name == n } }
+    fun oeffnen(w: Werkzeug) { stapel = (seiten.map { it.name } + w.name).joinToString(",") }
+    fun zurueck() { stapel = seiten.dropLast(1).joinToString(",") { it.name } }
+    BackHandler(enabled = seiten.isNotEmpty()) { zurueck() }
     Box(Modifier.fillMaxSize().background(Farbe.grund)) {
-        when (offen) {
-            Werkzeug.Mac.name -> MacSeite(zurueck = { offen = null })
-            else -> StartSeite(oeffnen = { offen = it.name })
+        when (seiten.lastOrNull()) {
+            Werkzeug.Update -> UpdateSeite(::zurueck, notfallOeffnen = { oeffnen(Werkzeug.Notfall) })
+            Werkzeug.Notfall -> NotfallSeite(::zurueck)
+            Werkzeug.Mac -> MacSeite(::zurueck)
+            null -> StartSeite(::oeffnen)
         }
     }
 }
@@ -120,12 +135,14 @@ private fun StartSeite(oeffnen: (Werkzeug) -> Unit) {
             )
         }
 
-        Spacer(Modifier.height(28.dp))
-        Etikett("Werkzeuge")
-        Spacer(Modifier.height(10.dp))
-        for (w in Werkzeug.entries) {
-            WerkzeugKarte(w) { oeffnen(w) }
+        for (b in Bereich.entries) {
+            Spacer(Modifier.height(28.dp))
+            Etikett(b.titel)
             Spacer(Modifier.height(10.dp))
+            for (w in Werkzeug.entries.filter { it.bereich == b }) {
+                WerkzeugKarte(w) { oeffnen(w) }
+                Spacer(Modifier.height(10.dp))
+            }
         }
 
         Spacer(Modifier.height(24.dp))

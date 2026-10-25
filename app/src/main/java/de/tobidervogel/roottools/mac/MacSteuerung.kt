@@ -1,7 +1,7 @@
 package de.tobidervogel.roottools.mac
 
 import android.content.Context
-import de.tobidervogel.roottools.root.Root
+import de.tobidervogel.roottools.root.Skript
 
 /** Was mac.sh ueber "zustand" meldet. Felder, die auf dem Geraet nicht auslesbar sind, bleiben null. */
 data class MacZustand(
@@ -66,38 +66,19 @@ data class MacZustand(
     }
 }
 
-/**
- * Root-Seite des Werkzeugs. Die eigentliche Arbeit macht assets/mac.sh: die App kopiert es bei jedem Aufruf frisch
- * nach [DIR] (so laeuft immer die Fassung dieser App-Version) und ruft es in demselben su auf. Alles blockiert.
- */
+/** Root-Seite des Werkzeugs: die Arbeit macht assets/mac.sh (siehe [Skript]). Alles blockiert. */
 object MacSteuerung {
-    private const val DIR = "/data/adb/roottools"
-    private const val ENDE = "ROOTTOOLS_ENDE"
-
     fun zustand(ctx: Context) = aufruf(ctx, "zustand")
 
     /** [mac] muss schon durch [Mac.normalisieren] gegangen sein; mac.sh prueft trotzdem noch einmal. */
     fun setzen(ctx: Context, mac: String, beimStart: Boolean) =
-        aufruf(ctx, "setzen $mac ${if (beimStart) "ja" else "nein"}")
+        aufruf(ctx, "setzen", mac, if (beimStart) "ja" else "nein")
 
     fun aus(ctx: Context) = aufruf(ctx, "aus")
 
-    private fun aufruf(ctx: Context, befehl: String): MacZustand {
-        // Ohne \r: mit Windows-Zeilenenden (falsch ausgecheckt) liefe das Skript auf dem Handy nicht.
-        val skript = ctx.assets.open("mac.sh").use { it.reader().readText() }.replace("\r", "").trimEnd('\n')
-        // Erst in eine neue Datei, dann umbenennen: ein laufender Waechter liest seine (alte) Datei weiter,
-        // statt mitten im Ueberschreiben Unsinn zu lesen.
-        val ergebnis = Root.ausfuehren(
-            "mkdir -p $DIR && chmod 700 $DIR\n" +
-                "cat > $DIR/mac.sh.neu <<'$ENDE'\n$skript\n$ENDE\n" +
-                "chmod 700 $DIR/mac.sh.neu && mv -f $DIR/mac.sh.neu $DIR/mac.sh\n" +
-                "/system/bin/sh $DIR/mac.sh $befehl\n",
-        )
-        val zustand = MacZustand.lesen(ergebnis.ausgabe)
-        return when {
-            zustand.fehler != null || zustand.root -> zustand
-            Root.vorhanden() -> zustand.copy(fehler = "Root abgelehnt. In Magisk → Superuser für Root Tools erlauben.")
-            else -> zustand.copy(fehler = "Kein su gefunden. Ist Magisk installiert?")
-        }
+    private fun aufruf(ctx: Context, vararg befehl: String): MacZustand {
+        val werte = Skript.aufrufen(ctx, "mac.sh", *befehl)
+        val zustand = MacZustand.lesen(werte.ausgabe)
+        return if (zustand.fehler == null && werte.fehler != null) zustand.copy(fehler = werte.fehler) else zustand
     }
 }
