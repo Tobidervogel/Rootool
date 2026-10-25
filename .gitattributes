@@ -1,0 +1,8 @@
+* text=auto
+# Laeuft auf Android/Linux: Windows-Zeilenenden wuerden das Skript zerbrechen.
+*.sh text eol=lf
+gradlew text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.jar binary
+*.ttf binary
