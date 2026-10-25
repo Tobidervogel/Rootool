@@ -1,46 +1,38 @@
 # Root Tools
 
 Private Android-App für Tobis gerootetes **OnePlus Nord 3** (CPH2493, OxygenOS 16 / Android 16, Magisk).
-Sammelt Werkzeuge, die nur mit Root gehen. Keine Berechtigungen, kein Internet: alles läuft über `su`.
+Sammelt Werkzeuge, die nur mit Root gehen. Alles läuft über `su`; ins Internet geht die App nur, wenn man im
+Werbeblocker eine Liste lädt.
+
+Jedes Werkzeug hat ein Shell-Skript unter `app/src/main/assets/`. Die App kopiert es bei jedem Aufruf frisch nach
+`/data/adb/roottools/` und ruft es als root auf; die Antwort kommt als `SCHLUESSEL=wert`-Zeilen zurück
+(`root/Skript.kt`). Was nach einem Neustart weiterlaufen soll, legt ein Skript unter `/data/adb/service.d/` an.
 
 ## Werkzeuge
 
-### MAC-Adresse
+| Werkzeug | Was es tut | Skript |
+|---|---|---|
+| **System-Update** | Zeigt Slots und den Zustand der Boot-Abbilder beider Slots (`magiskboot cpio test`). Wartet ein installiertes Update auf den Neustart, sagt die Seite, ob erst Magisk den inaktiven Slot patchen muss oder ob Root den Neustart übersteht. Anleitung Schritt für Schritt, „Lokale Installation freischalten“. | `update.sh` |
+| **Notfall-Sicherung** | boot, init_boot, vendor_boot, vbmeta, dtbo, lk (beide Slots) und die MediaTek-Funkdaten (nvram, nvdata, nvcfg, persist, proinfo, protect1/2) nach `RootTools/Notfall/<Datum>`, mit `SHA256SUMS` und Anleitung. Nur lesen. | `update.sh` |
+| **App-Sicherung** | Apps mit Daten sichern und zurückspielen. „Neue APK einspielen“ für anders signierte Builds: sichern, deinstallieren, installieren, Daten zurück; scheitert die Installation, kommt die alte App wieder. | `apps.sh` |
+| **Firewall** | Apps das Internet sperren, dauerhaft oder nach Zeitplan. Androids eingebaute Sperrliste (`cmd connectivity`, FIREWALL_CHAIN_OEM_DENY_3), kein VPN, läuft neben Tailscale. | `firewall.sh` |
+| **Werbeblocker** | hosts-Datei über Magisks „Systemless Hosts“-Modul, Listen von StevenBlack/hosts (auf Wunsch auch soziale Netzwerke), eigene Sperren und Ausnahmen. | `hosts.sh` |
+| **MAC-Adresse** | Eigene WLAN-MAC statt Zufalls-MAC. Schaltet Androids Würfeln zur Laufzeit ab (`cmd wifi force-overlay-config-value`, ab Android 16), Wächter setzt die MAC nach WLAN-Neustarts wieder. | `mac.sh` |
+| **ADB übers Netz** | ADB auf Port 5555, per iptables nur für Tailscale (100.64.0.0/10), das Heimnetz und localhost; bleibt nach dem Neustart an. Für Claude-Cloud-Sessions und den PC. | `adb.sh` |
+| **Logcat** | Meldungen und Abstürze aller Apps, nach App gefiltert, kopieren und teilen. | `logcat.sh` |
 
-Eigene WLAN-MAC statt Androids Zufalls-MAC. Eintippen oder würfeln, „Übernehmen“, fertig. Gilt für alle WLANs.
+Dateien auf dem Handy: `/data/adb/roottools/` (Skripte, Einstellungen, Protokolle), `/data/adb/service.d/roottools-*.sh`
+(Start beim Hochfahren), Sicherungen unter `Interner Speicher/RootTools/`. Alles entfernen, falls die App weg ist:
 
-So funktioniert es (im Android-16-Quelltext von `packages/modules/Wifi` nachgesehen):
+```
+su -c 'rm -rf /data/adb/roottools /data/adb/service.d/roottools-*.sh'
+```
 
-1. Android setzt bei jeder Verbindung und Trennung eine Zufalls-MAC, solange das Overlay
-   `config_wifi_connected_mac_randomization_supported` an ist. Root schaltet es zur Laufzeit ab:
-   `cmd wifi force-overlay-config-value bool config_wifi_connected_mac_randomization_supported enabled false`.
-   Das hält bis zum nächsten Neustart. Erst ab Android 16 wirkt das (Android 15 liest den Wert am Cache vorbei).
-2. Danach setzt Root Tools die MAC mit `ifconfig wlan0 down hw ether … up` in **einem** Aufruf. So kurz, dass
-   Android den Ausfall nicht als Absturz wertet; der WLAN-HAL macht es bei seiner Zufalls-MAC genauso.
-3. Ein kleiner Wächter (Root-Shell im Hintergrund) setzt die MAC wieder, wenn das WLAN neu startet und der
-   Treiber die Geräte-MAC zurückbringt. Er gibt auf, wenn sie 5-mal in 2 Minuten überschrieben wird, damit das WLAN
-   nicht endlos trennt.
-4. „Nach Neustart behalten“ legt `/data/adb/service.d/roottools-mac.sh` an: Magisk startet den Wächter dann beim
-   Hochfahren.
+dann neu starten. Das hosts-Modul (`/data/adb/modules/hosts`) gehört Magisk und lässt sich in Magisk entfernen.
 
-Beim Setzen trennt das WLAN kurz und verbindet sich mit der neuen MAC neu (neue IP vom Router).
-„Zurücksetzen“ schaltet alles ab und startet das WLAN neu, dann würfelt Android wieder.
-
-Dateien auf dem Handy:
-
-| Datei | Inhalt |
-|---|---|
-| `/data/adb/roottools/mac.sh` | Das Skript aus `app/src/main/assets/mac.sh`, bei jedem Aufruf frisch kopiert |
-| `/data/adb/roottools/mac.conf` | Die eigene MAC (`MAC=…`). Fehlt sie, beendet sich der Wächter |
-| `/data/adb/roottools/mac.log` | Protokoll (die App zeigt die letzten Zeilen) |
-| `/data/adb/service.d/roottools-mac.sh` | Startet den Wächter beim Hochfahren |
-
-Komplett entfernen, falls die App weg ist: `su -c 'rm -rf /data/adb/roottools /data/adb/service.d/roottools-mac.sh'`
-und neu starten.
-
-Noch nicht auf dem Nord 3 ausprobiert (Stand 25.10.2026): ob OxygenOS den Befehl `force-overlay-config-value`
-mitbringt und ob der MediaTek-Treiber die Adresse annimmt. Die App zeigt beides an („Android-Schalter fehlt“,
-Protokoll).
+**Noch nicht auf dem Nord 3 ausprobiert** (Stand 25.10.2026). Alle Skripte sind auf dem PC mit nachgebauten
+Android-Befehlen getestet, aber Details von OxygenOS (z. B. ob `force-overlay-config-value` da ist, welche
+Partitionen es gibt) zeigt erst das Gerät. Die Seiten zeigen Fehler und Protokolle an.
 
 ## Bauen und installieren
 
@@ -51,10 +43,17 @@ gradlew.bat assembleDebug
 installieren.cmd
 ```
 
-Tests: `gradlew.bat testDebugUnitTest` (MAC-Prüfung, Zustand lesen) und auf Linux/WSL
-`sh app/src/test/shell/mac_test.sh mksh` (das Root-Skript mit nachgebauten Android-Befehlen).
+Beim ersten Start fragt Magisk nach Root. Tipp: In Magisk → Superuser → Root Tools die Benachrichtigung abschalten,
+sonst erscheint bei jedem Root-Aufruf ein Hinweis.
+
+## Tests
+
+- `gradlew.bat testDebugUnitTest`: Prüfungen und das Lesen der Skript-Antworten.
+- Die Skripte auf Linux/WSL mit nachgebauten Android-Befehlen, jeweils in mksh (Androids Shell), dash und busybox:
+  `sh app/src/test/shell/<werkzeug>_test.sh mksh` für `mac`, `update`, `apps`, `firewall`, `hosts`, `adb`, `logcat`.
 
 ## Neues Werkzeug
 
-Eintrag in `enum class Werkzeug` (`MainActivity.kt`), eigene Seite unter `app/src/main/java/.../<werkzeug>/`,
-Root-Befehle gebündelt über `Root.ausfuehren` (jeder Aufruf zeigt einen Magisk-Hinweis).
+1. Skript `app/src/main/assets/<name>.sh` mit `SCHLUESSEL=wert`-Antworten und Test unter `app/src/test/shell/`.
+2. Seite unter `app/src/main/java/de/tobidervogel/roottools/<bereich>/`, Root-Aufrufe über `Skript.aufrufen`.
+3. Eintrag in `enum class Werkzeug` und in `App()` (`MainActivity.kt`).

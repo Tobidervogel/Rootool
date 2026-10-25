@@ -38,6 +38,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import de.tobidervogel.roottools.ui.AppEintrag
 import de.tobidervogel.roottools.ui.AppSymbol
+import de.tobidervogel.roottools.ui.Chip
 import de.tobidervogel.roottools.ui.Apps
 import de.tobidervogel.roottools.ui.Etikett
 import de.tobidervogel.roottools.ui.Farbe
@@ -238,8 +239,8 @@ private fun FirewallZeile(
         if (regel == null || !ausgeklappt) return@Karte
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Wahl("Immer", regel.immer) { aendern(regel.copy(immer = true)) }
-            Wahl("Nach Zeitplan", !regel.immer) { aendern(regel.copy(immer = false)) }
+            Chip("Immer", regel.immer) { aendern(regel.copy(immer = true)) }
+            Chip("Nach Zeitplan", !regel.immer) { aendern(regel.copy(immer = false)) }
         }
         if (!regel.immer) {
             Spacer(Modifier.height(12.dp))
@@ -254,14 +255,6 @@ private fun FirewallZeile(
             }
         }
     }
-}
-
-@Composable
-private fun Wahl(text: String, gewaehlt: Boolean, onClick: () -> Unit) {
-    Box(
-        Modifier.clip(RoundedCornerShape(14.dp)).background(if (gewaehlt) Farbe.akzentDunkel else Farbe.karte2)
-            .clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 8.dp),
-    ) { Text(text, style = Schrift.klein, color = if (gewaehlt) Farbe.akzent else Farbe.text2) }
 }
 
 /** Uhrzeit HH:MM; beim Tippen nur Ziffern, der Doppelpunkt kommt von selbst. */

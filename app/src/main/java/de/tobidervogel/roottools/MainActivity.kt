@@ -27,9 +27,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.Lan
 import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material.icons.rounded.SystemUpdate
+import androidx.compose.material.icons.rounded.Terminal
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -46,6 +48,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import de.tobidervogel.roottools.entwickler.AdbSeite
+import de.tobidervogel.roottools.entwickler.LogcatSeite
 import de.tobidervogel.roottools.mac.MacSeite
 import de.tobidervogel.roottools.netz.FirewallSeite
 import de.tobidervogel.roottools.netz.WerbeblockerSeite
@@ -64,7 +68,7 @@ import de.tobidervogel.roottools.ui.Schrift
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-enum class Bereich(val titel: String) { System("System"), Sicherung("Sicherung"), Netz("Netz") }
+enum class Bereich(val titel: String) { System("System"), Sicherung("Sicherung"), Netz("Netz"), Entwickler("Entwickler") }
 
 /** Alle Werkzeuge der App. Ein neues Werkzeug = ein Eintrag hier plus seine Seite in [App]. */
 enum class Werkzeug(val titel: String, val text: String, val symbol: ImageVector, val bereich: Bereich) {
@@ -74,6 +78,8 @@ enum class Werkzeug(val titel: String, val text: String, val symbol: ImageVector
     Firewall("Firewall", "Apps das Internet sperren, auch nach Zeitplan", Icons.Rounded.Shield, Bereich.Netz),
     Werbeblocker("Werbeblocker", "Werbung und Tracker systemweit sperren", Icons.Rounded.Block, Bereich.Netz),
     Mac("MAC-Adresse", "Eigene WLAN-MAC statt Androids Zufalls-MAC", Icons.Rounded.Wifi, Bereich.Netz),
+    Adb("ADB übers Netz", "Für Cloud-Sessions und PC, nur über Tailscale und Heimnetz", Icons.Rounded.Lan, Bereich.Entwickler),
+    Logcat("Logcat", "Meldungen und Abstürze aller Apps lesen", Icons.Rounded.Terminal, Bereich.Entwickler),
 }
 
 class MainActivity : ComponentActivity() {
@@ -101,6 +107,8 @@ private fun App() {
             Werkzeug.Firewall -> FirewallSeite(::zurueck)
             Werkzeug.Werbeblocker -> WerbeblockerSeite(::zurueck)
             Werkzeug.Mac -> MacSeite(::zurueck)
+            Werkzeug.Adb -> AdbSeite(::zurueck)
+            Werkzeug.Logcat -> LogcatSeite(::zurueck)
             null -> StartSeite(::oeffnen)
         }
     }

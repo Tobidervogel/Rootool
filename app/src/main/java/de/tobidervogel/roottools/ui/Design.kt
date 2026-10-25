@@ -310,3 +310,12 @@ fun SicherKnopf(text: String, frage: String, onClick: () -> Unit, aktiv: Boolean
         }
     }
 }
+
+/** Kleiner Auswahl-Knopf (Filter, Optionen). [gewaehlt] = in Minze hervorgehoben. */
+@Composable
+fun Chip(text: String, gewaehlt: Boolean = false, aktiv: Boolean = true, onClick: () -> Unit) {
+    Box(
+        Modifier.clip(RoundedCornerShape(14.dp)).background(if (gewaehlt) Farbe.akzentDunkel else Farbe.karte2)
+            .clickable(enabled = aktiv, onClick = onClick).padding(horizontal = 14.dp, vertical = 8.dp),
+    ) { Text(text, style = Schrift.klein, color = if (gewaehlt) Farbe.akzent else Farbe.text) }
+}
